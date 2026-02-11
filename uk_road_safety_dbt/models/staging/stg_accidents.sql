@@ -1,77 +1,74 @@
-with unioned as (
+{% set years = ['2015', '2016', '2017', '2018'] %}
 
-    select *, '2015' as source_file_year from {{ source('uk_road_safety_raw', 'ACCIDENTS_2015') }}
-    union all
-    select *, '2016' as source_file_year from {{ source('uk_road_safety_raw', 'ACCIDENTS_2016') }}
-    union all
-    select *, '2017' as source_file_year from {{ source('uk_road_safety_raw', 'ACCIDENTS_2017') }}
-    union all
-    select *, '2018' as source_file_year from {{ source('uk_road_safety_raw', 'ACCIDENTS_2018') }}
+{% for year in years %}
+{% if not loop.first %}union all{% endif %}
+select
+    -- Primary key
+    "Accident_Index"::varchar                               as accident_index,
 
-),
+    -- Source tracking
+    '{{ year }}'::integer                                   as source_year,
 
-renamed as (
+    -- Location
+    try_cast("Location_Easting_OSGR"::varchar as integer)  as location_easting_osgr,
+    try_cast("Location_Northing_OSGR"::varchar as integer) as location_northing_osgr,
+    try_cast("Longitude"::varchar as float)                 as longitude,
+    try_cast("Latitude"::varchar as float)                  as latitude,
+    "LSOA_of_Accident_Location"::varchar                    as lsoa_of_accident_location,
 
-    select
-        -- Primary key
-        "Accident_Index"::varchar                               as accident_index,
+    -- Administrative
+    try_cast("Police_Force"::varchar as integer)            as police_force_code,
+    try_cast("Local_Authority_(District)"::varchar as integer)
+                                                            as local_authority_district_code,
+    "Local_Authority_(Highway)"::varchar                    as local_authority_highway,
 
-        -- Source tracking
-        source_file_year::integer                               as source_year,
+    -- Severity & counts
+    try_cast("Accident_Severity"::varchar as integer)       as accident_severity_code,
+    try_cast("Number_of_Vehicles"::varchar as integer)      as number_of_vehicles,
+    try_cast("Number_of_Casualties"::varchar as integer)    as number_of_casualties,
 
-        -- Location
-        "Location_Easting_OSGR"::integer                        as location_easting_osgr,
-        "Location_Northing_OSGR"::integer                       as location_northing_osgr,
-        "Longitude"::float                                      as longitude,
-        "Latitude"::float                                       as latitude,
-        "LSOA_of_Accident_Location"::varchar                    as lsoa_of_accident_location,
+    -- Date & time
+    try_to_date("Date"::varchar, 'DD/MM/YYYY')             as accident_date,
+    try_cast("Day_of_Week"::varchar as integer)             as day_of_week_code,
+    try_to_time("Time"::varchar, 'HH24:MI')                as accident_time,
 
-        -- Administrative
-        "Police_Force"::integer                                 as police_force_code,
-        "Local_Authority_(District)"::integer                   as local_authority_district_code,
-        "Local_Authority_(Highway)"::varchar                    as local_authority_highway,
+    -- Road characteristics
+    try_cast("1st_Road_Class"::varchar as integer)          as first_road_class_code,
+    try_cast("1st_Road_Number"::varchar as integer)         as first_road_number,
+    try_cast("Road_Type"::varchar as integer)               as road_type_code,
+    try_cast(nullif("Speed_limit"::varchar, 'NULL') as integer) as speed_limit,
+    try_cast("2nd_Road_Class"::varchar as integer)          as second_road_class_code,
+    try_cast("2nd_Road_Number"::varchar as integer)         as second_road_number,
 
-        -- Severity & counts
-        "Accident_Severity"::integer                            as accident_severity_code,
-        "Number_of_Vehicles"::integer                           as number_of_vehicles,
-        "Number_of_Casualties"::integer                         as number_of_casualties,
+    -- Junction
+    try_cast("Junction_Detail"::varchar as integer)         as junction_detail_code,
+    nullif(try_cast("Junction_Control"::varchar as integer), -1)
+                                                            as junction_control_code,
 
-        -- Date & time
-        try_to_date("Date"::varchar, 'DD/MM/YYYY')             as accident_date,
-        "Day_of_Week"::integer                                  as day_of_week_code,
-        try_to_time("Time"::varchar, 'HH24:MI')                as accident_time,
+    -- Pedestrian crossing
+    try_cast("Pedestrian_Crossing-Human_Control"::varchar as integer)
+                                                            as ped_crossing_human_code,
+    try_cast("Pedestrian_Crossing-Physical_Facilities"::varchar as integer)
+                                                            as ped_crossing_physical_code,
 
-        -- Road characteristics
-        "1st_Road_Class"::integer                               as first_road_class_code,
-        "1st_Road_Number"::integer                              as first_road_number,
-        "Road_Type"::integer                                    as road_type_code,
-        try_cast(nullif("Speed_limit"::varchar, 'NULL') as integer) as speed_limit,
-        "2nd_Road_Class"::integer                               as second_road_class_code,
-        "2nd_Road_Number"::integer                              as second_road_number,
+    -- Conditions
+    try_cast("Light_Conditions"::varchar as integer)        as light_conditions_code,
+    nullif(try_cast("Weather_Conditions"::varchar as integer), -1)
+                                                            as weather_conditions_code,
+    nullif(try_cast("Road_Surface_Conditions"::varchar as integer), -1)
+                                                            as road_surface_conditions_code,
+    nullif(try_cast("Special_Conditions_at_Site"::varchar as integer), -1)
+                                                            as special_conditions_code,
+    nullif(try_cast("Carriageway_Hazards"::varchar as integer), -1)
+                                                            as carriageway_hazards_code,
 
-        -- Junction
-        "Junction_Detail"::integer                              as junction_detail_code,
-        nullif("Junction_Control"::integer, -1)                 as junction_control_code,
+    -- Area classification
+    nullif(try_cast("Urban_or_Rural_Area"::varchar as integer), -1)
+                                                            as urban_or_rural_area_code,
 
-        -- Pedestrian crossing
-        "Pedestrian_Crossing-Human_Control"::integer            as ped_crossing_human_code,
-        "Pedestrian_Crossing-Physical_Facilities"::integer      as ped_crossing_physical_code,
+    -- Police attendance
+    try_cast("Did_Police_Officer_Attend_Scene_of_Accident"::varchar as integer)
+                                                            as police_officer_attend_code
 
-        -- Conditions
-        "Light_Conditions"::integer                             as light_conditions_code,
-        nullif("Weather_Conditions"::integer, -1)               as weather_conditions_code,
-        nullif("Road_Surface_Conditions"::integer, -1)          as road_surface_conditions_code,
-        nullif("Special_Conditions_at_Site"::integer, -1)       as special_conditions_code,
-        nullif("Carriageway_Hazards"::integer, -1)              as carriageway_hazards_code,
-
-        -- Area classification
-        nullif("Urban_or_Rural_Area"::integer, -1)               as urban_or_rural_area_code,
-
-        -- Police attendance
-        "Did_Police_Officer_Attend_Scene_of_Accident"::integer  as police_officer_attend_code
-
-    from unioned
-
-)
-
-select * from renamed
+from {{ source('uk_road_safety_raw', 'ACCIDENTS_' ~ year) }}
+{% endfor %}

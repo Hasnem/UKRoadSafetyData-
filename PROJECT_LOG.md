@@ -45,7 +45,7 @@
 ### 6. Built dbt staging layer (sources + staging models + tests)
 - **Folder**: `uk_road_safety_dbt/models/staging/`
 - Created `_sources.yml` defining all 57 RAW tables as dbt sources
-- Created 3 fact staging models:
+- Created 3 fact staging models (Jinja-looped UNION ALL with `try_cast` for safe type handling):
   - `stg_accidents.sql` — unions 4 years, 32 columns renamed to snake_case, date/time parsed, sentinel -1 → NULL
   - `stg_casualties.sql` — unions 4 years, generates `casualty_id` surrogate key
   - `stg_vehicles.sql` — unions 4 years, generates `vehicle_id` surrogate key, `propulsion_code` kept as VARCHAR (has code 'M')
@@ -55,3 +55,26 @@
 - Updated `dbt_project.yml`: staging models materialized as views in `DBT_HNEMRAWI_STAGING` schema
 - **dbt run**: 48/48 models built successfully
 - **dbt test**: 182/182 tests passed
+
+### 7. Pushed to GitHub
+- **Repo**: https://github.com/Hasnem/UKRoadSafetyData-.git
+- Initial commit to `main` branch (76 files)
+- `.gitignore` excludes: `.venv/`, `data/`, `*.duckdb`, dbt `target/`/`logs/`, `.claude/`
+- Source `zip_archive/` included for reproducibility (32MB total)
+
+### 8. Built dbt marts layer (analysis-ready tables for Looker Studio)
+- **Folder**: `uk_road_safety_dbt/models/marts/`
+- Architecture: Staging → Marts (no intermediate layer — joins are straightforward)
+- Created 3 denormalized mart tables (materialized as tables in `DBT_HNEMRAWI_MARTS` schema):
+  - `mart_accidents.sql` — 529,294 rows, accident-level table enriched with 18 lookup labels + derived columns (`is_fatal`, `is_weekend`, `accident_year`, `accident_month`)
+  - `mart_casualties.sql` — 699,163 rows, casualty-level table with accident context, vehicle type, and 12 casualty lookup labels
+  - `mart_vehicles.sql` — 975,680 rows, vehicle-level table with accident context and 16 vehicle lookup labels
+- Each mart table is self-contained (all codes resolved to human-readable labels) — no joins needed in Looker Studio
+- Both codes (for ordering/filtering) and labels (for display) included in every table
+- Created `_marts_models.yml` with full documentation and 27 data tests:
+  - unique + not_null on primary keys, relationships (casualties→accidents, vehicles→accidents)
+  - accepted_values on severity labels (`Fatal`, `Serious`, `Slight`)
+- Updated staging models to use Jinja loops + `try_cast` for robust type handling across years
+- Updated `dbt_project.yml`: marts materialized as tables with `+schema: marts`
+- **dbt run**: 51/51 models built successfully (48 staging views + 3 mart tables)
+- **dbt test**: 209/209 tests passed (182 staging + 27 marts)

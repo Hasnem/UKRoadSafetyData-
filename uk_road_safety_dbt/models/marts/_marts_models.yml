@@ -1,0 +1,545 @@
+version: 2
+
+models:
+
+  # ════════════════════════════════════════════════════════════════
+  # MART — ACCIDENTS
+  # ════════════════════════════════════════════════════════════════
+  - name: mart_accidents
+    description: >
+      Analysis-ready accident table for Looker Studio dashboards.
+      One row per police-reported personal injury road accident (2015-2018).
+      All coded fields are enriched with human-readable lookup labels.
+      Includes derived columns for common filters (is_fatal, is_weekend).
+    columns:
+      - name: accident_index
+        description: Unique accident identifier (DfT reference).
+        data_tests:
+          - unique
+          - not_null
+
+      - name: source_year
+        description: Year the record originated from (2015-2018).
+        data_tests:
+          - not_null
+
+      - name: latitude
+        description: Latitude of accident location (WGS84).
+
+      - name: longitude
+        description: Longitude of accident location (WGS84).
+
+      - name: location_easting_osgr
+        description: Ordnance Survey easting grid reference.
+
+      - name: location_northing_osgr
+        description: Ordnance Survey northing grid reference.
+
+      - name: lsoa_of_accident_location
+        description: Lower Layer Super Output Area code for accident location.
+
+      - name: police_force_code
+        description: Police force numeric code.
+
+      - name: police_force
+        description: Police force name (e.g. Metropolitan Police, West Midlands).
+
+      - name: local_authority_district_code
+        description: Local authority district numeric code.
+
+      - name: local_authority_district
+        description: Local authority district name.
+
+      - name: local_authority_highway
+        description: Local authority highway code (ONS format).
+
+      - name: accident_severity_code
+        description: "Severity code: 1=Fatal, 2=Serious, 3=Slight."
+        data_tests:
+          - not_null
+
+      - name: accident_severity
+        description: "Severity label: Fatal, Serious, or Slight."
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['Fatal', 'Serious', 'Slight']
+
+      - name: number_of_vehicles
+        description: Total vehicles involved in the accident.
+        data_tests:
+          - not_null
+
+      - name: number_of_casualties
+        description: Total casualties in the accident.
+        data_tests:
+          - not_null
+
+      - name: accident_date
+        description: Date of accident.
+        data_tests:
+          - not_null
+
+      - name: accident_year
+        description: Year extracted from accident_date.
+        data_tests:
+          - not_null
+
+      - name: accident_month
+        description: Month number (1-12) extracted from accident_date.
+        data_tests:
+          - not_null
+
+      - name: accident_time
+        description: Time of accident (HH:MI).
+
+      - name: day_of_week_code
+        description: "Day of week code: 1=Sunday through 7=Saturday."
+
+      - name: day_of_week
+        description: Day of week name (e.g. Monday, Tuesday).
+
+      - name: first_road_class_code
+        description: "Class of 1st road: 1=Motorway, 2=A(M), 3=A, 4=B, 5=C, 6=Unclassified."
+
+      - name: first_road_class
+        description: First road class label.
+
+      - name: first_road_number
+        description: Number of 1st road (0 if unnumbered).
+
+      - name: road_type_code
+        description: Road type numeric code.
+
+      - name: road_type
+        description: Road type label (e.g. Roundabout, One way street, Dual carriageway).
+
+      - name: speed_limit
+        description: Speed limit in MPH at accident location.
+
+      - name: second_road_class_code
+        description: Class of 2nd road at junction (0 if not at junction).
+
+      - name: second_road_class
+        description: Second road class label.
+
+      - name: second_road_number
+        description: Number of 2nd road at junction.
+
+      - name: junction_detail_code
+        description: Junction detail numeric code.
+
+      - name: junction_detail
+        description: Junction type label (e.g. T or staggered junction, Roundabout).
+
+      - name: junction_control_code
+        description: Junction control numeric code.
+
+      - name: junction_control
+        description: Junction control label (e.g. Authorised person, Traffic signal).
+
+      - name: ped_crossing_human_code
+        description: Human control at pedestrian crossing code.
+
+      - name: ped_crossing_human
+        description: Human control at pedestrian crossing label.
+
+      - name: ped_crossing_physical_code
+        description: Physical facilities at pedestrian crossing code.
+
+      - name: ped_crossing_physical
+        description: Physical facilities at pedestrian crossing label.
+
+      - name: light_conditions_code
+        description: Light conditions numeric code.
+
+      - name: light_conditions
+        description: Light conditions label (e.g. Daylight, Darkness - lights lit).
+
+      - name: weather_conditions_code
+        description: Weather conditions numeric code.
+
+      - name: weather_conditions
+        description: Weather conditions label (e.g. Fine no high winds, Raining no high winds).
+
+      - name: road_surface_conditions_code
+        description: Road surface conditions numeric code.
+
+      - name: road_surface_conditions
+        description: Road surface conditions label (e.g. Dry, Wet or damp).
+
+      - name: special_conditions_code
+        description: Special conditions at site numeric code.
+
+      - name: special_conditions
+        description: Special conditions label.
+
+      - name: carriageway_hazards_code
+        description: Carriageway hazards numeric code.
+
+      - name: carriageway_hazards
+        description: Carriageway hazards label.
+
+      - name: urban_or_rural_area_code
+        description: "Urban/rural code: 1=Urban, 2=Rural, 3=Unallocated."
+
+      - name: urban_or_rural_area
+        description: Urban or rural area label.
+
+      - name: police_officer_attend_code
+        description: Police officer attendance numeric code.
+
+      - name: police_officer_attend
+        description: Police officer attendance label.
+
+      - name: is_fatal
+        description: Whether the accident was fatal (severity code = 1).
+        data_tests:
+          - not_null
+
+      - name: is_weekend
+        description: Whether the accident occurred on Saturday or Sunday.
+        data_tests:
+          - not_null
+
+  # ════════════════════════════════════════════════════════════════
+  # MART — CASUALTIES
+  # ════════════════════════════════════════════════════════════════
+  - name: mart_casualties
+    description: >
+      Analysis-ready casualty table for Looker Studio dashboards.
+      One row per person injured or killed in a road accident (2015-2018).
+      Enriched with lookup labels, accident context (date, location,
+      conditions), and vehicle type. Denormalized for direct dashboard use.
+    columns:
+      - name: casualty_id
+        description: Surrogate key (accident_index-vehicle_reference-casualty_reference).
+        data_tests:
+          - unique
+          - not_null
+
+      - name: accident_index
+        description: Foreign key to mart_accidents.
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('mart_accidents')
+              field: accident_index
+
+      - name: vehicle_reference
+        description: Vehicle reference number within the accident.
+
+      - name: casualty_reference
+        description: Casualty reference number within the accident.
+
+      - name: casualty_class_code
+        description: "Casualty class code: 1=Driver/Rider, 2=Passenger, 3=Pedestrian."
+        data_tests:
+          - not_null
+
+      - name: casualty_class
+        description: Casualty class label (Driver/Rider, Passenger, or Pedestrian).
+        data_tests:
+          - not_null
+
+      - name: casualty_severity_code
+        description: "Casualty severity code: 1=Fatal, 2=Serious, 3=Slight."
+        data_tests:
+          - not_null
+
+      - name: casualty_severity
+        description: Casualty severity label.
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['Fatal', 'Serious', 'Slight']
+
+      - name: casualty_type_code
+        description: Casualty type code (maps to vehicle types).
+
+      - name: casualty_type
+        description: Casualty type label.
+
+      - name: sex_of_casualty_code
+        description: Sex of casualty code.
+
+      - name: sex_of_casualty
+        description: Sex of casualty label (Male, Female, Unknown).
+
+      - name: age_of_casualty
+        description: Age of casualty in years.
+
+      - name: age_band_of_casualty_code
+        description: Age band code.
+
+      - name: age_band_of_casualty
+        description: Age band label (e.g. 0-5, 6-10, 26-35).
+
+      - name: pedestrian_location_code
+        description: Pedestrian location code (0 if not a pedestrian).
+
+      - name: pedestrian_location
+        description: Pedestrian location label.
+
+      - name: pedestrian_movement_code
+        description: Pedestrian movement code (0 if not a pedestrian).
+
+      - name: pedestrian_movement
+        description: Pedestrian movement label.
+
+      - name: car_passenger_code
+        description: Car passenger position code.
+
+      - name: car_passenger
+        description: Car passenger position label.
+
+      - name: bus_or_coach_passenger_code
+        description: Bus or coach passenger status code.
+
+      - name: bus_or_coach_passenger
+        description: Bus or coach passenger status label.
+
+      - name: ped_road_maintenance_worker_code
+        description: Whether pedestrian was a road maintenance worker code.
+
+      - name: ped_road_maintenance_worker
+        description: Road maintenance worker label.
+
+      - name: casualty_home_area_type_code
+        description: Casualty home area type code.
+
+      - name: casualty_home_area_type
+        description: Casualty home area type label.
+
+      - name: casualty_imd_decile
+        description: IMD decile (1=most deprived, 10=least deprived).
+
+      - name: vehicle_type_code
+        description: Vehicle type code (from the vehicle the casualty was in/hit by).
+
+      - name: vehicle_type
+        description: Vehicle type label (e.g. Car, Motorcycle, Pedal cycle).
+
+      - name: accident_date
+        description: Date of the accident (denormalized from accidents).
+
+      - name: accident_year
+        description: Year of the accident.
+
+      - name: accident_time
+        description: Time of the accident.
+
+      - name: accident_severity_code
+        description: Accident-level severity code.
+
+      - name: accident_severity
+        description: Accident-level severity label (Fatal, Serious, Slight).
+
+      - name: latitude
+        description: Latitude of accident location.
+
+      - name: longitude
+        description: Longitude of accident location.
+
+      - name: police_force
+        description: Police force name.
+
+      - name: local_authority_district
+        description: Local authority district name.
+
+      - name: road_type
+        description: Road type label.
+
+      - name: speed_limit
+        description: Speed limit at accident location.
+
+      - name: light_conditions
+        description: Light conditions at time of accident.
+
+      - name: weather_conditions
+        description: Weather conditions at time of accident.
+
+      - name: urban_or_rural_area
+        description: Urban or rural area classification.
+
+  # ════════════════════════════════════════════════════════════════
+  # MART — VEHICLES
+  # ════════════════════════════════════════════════════════════════
+  - name: mart_vehicles
+    description: >
+      Analysis-ready vehicle table for Looker Studio dashboards.
+      One row per vehicle involved in a road accident (2015-2018).
+      Enriched with lookup labels and accident context (date, location,
+      conditions). Denormalized for direct dashboard use.
+    columns:
+      - name: vehicle_id
+        description: Surrogate key (accident_index-vehicle_reference).
+        data_tests:
+          - unique
+          - not_null
+
+      - name: accident_index
+        description: Foreign key to mart_accidents.
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('mart_accidents')
+              field: accident_index
+
+      - name: vehicle_reference
+        description: Vehicle reference number within the accident.
+
+      - name: vehicle_type_code
+        description: Vehicle type numeric code.
+        data_tests:
+          - not_null
+
+      - name: vehicle_type
+        description: Vehicle type label (e.g. Car, Motorcycle, Pedal cycle, Bus).
+
+      - name: vehicle_manoeuvre_code
+        description: Vehicle manoeuvre numeric code.
+
+      - name: vehicle_manoeuvre
+        description: Vehicle manoeuvre label (e.g. Going ahead, Turning right).
+
+      - name: towing_and_articulation_code
+        description: Towing or articulation status code.
+
+      - name: towing_and_articulation
+        description: Towing or articulation status label.
+
+      - name: vehicle_location_code
+        description: Vehicle location (restricted lane) code.
+
+      - name: vehicle_location
+        description: Vehicle location label.
+
+      - name: junction_location_code
+        description: Location relative to junction code.
+
+      - name: junction_location
+        description: Junction location label.
+
+      - name: skidding_and_overturning_code
+        description: Skidding and overturning code.
+
+      - name: skidding_and_overturning
+        description: Skidding and overturning label.
+
+      - name: hit_object_in_carriageway_code
+        description: Object hit in carriageway code (0=None).
+
+      - name: hit_object_in_carriageway
+        description: Object hit in carriageway label.
+
+      - name: vehicle_leaving_carriageway_code
+        description: How vehicle left carriageway code (0=Did not leave).
+
+      - name: vehicle_leaving_carriageway
+        description: Vehicle leaving carriageway label.
+
+      - name: hit_object_off_carriageway_code
+        description: Object hit off carriageway code (0=None).
+
+      - name: hit_object_off_carriageway
+        description: Object hit off carriageway label.
+
+      - name: first_point_of_impact_code
+        description: First point of impact code.
+
+      - name: first_point_of_impact
+        description: First point of impact label.
+
+      - name: was_left_hand_drive_code
+        description: "Left-hand drive code: 1=No, 2=Yes."
+
+      - name: was_left_hand_drive
+        description: Left-hand drive label.
+
+      - name: journey_purpose_code
+        description: Journey purpose code.
+
+      - name: journey_purpose
+        description: Journey purpose label (e.g. Commuting, School, Other).
+
+      - name: sex_of_driver_code
+        description: Sex of driver code.
+
+      - name: sex_of_driver
+        description: Sex of driver label (Male, Female, Not known).
+
+      - name: age_of_driver
+        description: Age of driver in years (NULL if missing).
+
+      - name: age_band_of_driver_code
+        description: Age band code for driver.
+
+      - name: age_band_of_driver
+        description: Age band label for driver.
+
+      - name: engine_capacity_cc
+        description: Engine capacity in cubic centimetres (NULL if missing).
+
+      - name: propulsion_code
+        description: Propulsion type code (VARCHAR, includes code M for undefined).
+
+      - name: propulsion
+        description: Propulsion type label (e.g. Petrol, Diesel, Electric).
+
+      - name: age_of_vehicle
+        description: Age of vehicle in years (NULL if missing).
+
+      - name: driver_imd_decile
+        description: IMD decile for driver (1=most deprived, 10=least deprived).
+
+      - name: driver_home_area_type_code
+        description: Driver home area type code.
+
+      - name: driver_home_area_type
+        description: Driver home area type label.
+
+      - name: vehicle_imd_decile
+        description: IMD decile for vehicle registration area.
+
+      - name: accident_date
+        description: Date of the accident (denormalized from accidents).
+
+      - name: accident_year
+        description: Year of the accident.
+
+      - name: accident_time
+        description: Time of the accident.
+
+      - name: accident_severity_code
+        description: Accident-level severity code.
+
+      - name: accident_severity
+        description: Accident-level severity label.
+
+      - name: latitude
+        description: Latitude of accident location.
+
+      - name: longitude
+        description: Longitude of accident location.
+
+      - name: police_force
+        description: Police force name.
+
+      - name: local_authority_district
+        description: Local authority district name.
+
+      - name: road_type
+        description: Road type label.
+
+      - name: speed_limit
+        description: Speed limit at accident location.
+
+      - name: light_conditions
+        description: Light conditions at time of accident.
+
+      - name: weather_conditions
+        description: Weather conditions at time of accident.
+
+      - name: urban_or_rural_area
+        description: Urban or rural area classification.
