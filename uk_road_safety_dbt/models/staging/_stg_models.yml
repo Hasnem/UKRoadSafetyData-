@@ -1,0 +1,541 @@
+version: 2
+
+models:
+
+  # ════════════════════════════════════════════════════════════════
+  # ACCIDENTS
+  # ════════════════════════════════════════════════════════════════
+  - name: stg_accidents
+    description: >
+      Staged accident records from UK DfT road safety data, 2015-2018.
+      Unions all four yearly raw tables with clean column names,
+      proper data types, and sentinel values (-1) converted to NULL.
+      Each row is one police-reported personal injury road accident.
+    columns:
+      - name: accident_index
+        description: Unique accident identifier assigned by the DfT (year prefix + police force + sequence).
+        data_tests:
+          - unique
+          - not_null
+
+      - name: source_year
+        description: Year the record originated from (2015-2018).
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [2015, 2016, 2017, 2018]
+
+      - name: location_easting_osgr
+        description: Ordnance Survey easting grid reference.
+
+      - name: location_northing_osgr
+        description: Ordnance Survey northing grid reference.
+
+      - name: longitude
+        description: Longitude of accident location (WGS84).
+
+      - name: latitude
+        description: Latitude of accident location (WGS84).
+
+      - name: lsoa_of_accident_location
+        description: Lower Layer Super Output Area code for accident location.
+
+      - name: police_force_code
+        description: Police force code. References lookup_police_force.
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_lookup_police_force')
+              field: code
+
+      - name: local_authority_district_code
+        description: Local authority district code.
+        data_tests:
+          - not_null
+
+      - name: local_authority_highway
+        description: Local authority highway code (ONS format e.g. E09000020).
+        data_tests:
+          - not_null
+
+      - name: accident_severity_code
+        description: "Severity: 1=Fatal, 2=Serious, 3=Slight."
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3]
+
+      - name: number_of_vehicles
+        description: Total number of vehicles involved.
+        data_tests:
+          - not_null
+
+      - name: number_of_casualties
+        description: Total number of casualties.
+        data_tests:
+          - not_null
+
+      - name: accident_date
+        description: Date of accident (parsed from DD/MM/YYYY).
+        data_tests:
+          - not_null
+
+      - name: day_of_week_code
+        description: "Day of week: 1=Sunday through 7=Saturday."
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6, 7]
+
+      - name: accident_time
+        description: Time of accident (parsed to TIME type).
+
+      - name: first_road_class_code
+        description: "Class of 1st road: 1=Motorway, 2=A(M), 3=A, 4=B, 5=C, 6=Unclassified."
+        data_tests:
+          - not_null
+
+      - name: first_road_number
+        description: Number of 1st road (0 if unnumbered).
+
+      - name: road_type_code
+        description: Type of road. References lookup_road_type.
+        data_tests:
+          - not_null
+
+      - name: speed_limit
+        description: Speed limit in MPH at accident location (NULL if data missing).
+
+      - name: second_road_class_code
+        description: Class of 2nd road at junction (0 if not at junction).
+
+      - name: second_road_number
+        description: Number of 2nd road at junction (0 if not at junction).
+
+      - name: junction_detail_code
+        description: Junction type. References lookup_junction_detail.
+
+      - name: junction_control_code
+        description: Junction control type (NULL if data missing).
+
+      - name: ped_crossing_human_code
+        description: Human control at pedestrian crossing within 50m.
+
+      - name: ped_crossing_physical_code
+        description: Physical facilities at pedestrian crossing within 50m.
+
+      - name: light_conditions_code
+        description: Lighting conditions. References lookup_light_conditions.
+        data_tests:
+          - not_null
+
+      - name: weather_conditions_code
+        description: Weather conditions (NULL if data missing).
+
+      - name: road_surface_conditions_code
+        description: Road surface conditions (NULL if data missing).
+
+      - name: special_conditions_code
+        description: Special conditions at site (NULL if data missing).
+
+      - name: carriageway_hazards_code
+        description: Carriageway hazards at site (NULL if data missing).
+
+      - name: urban_or_rural_area_code
+        description: "1=Urban, 2=Rural, 3=Unallocated (NULL if data missing)."
+        data_tests:
+          - accepted_values:
+              values: [1, 2, 3]
+
+      - name: police_officer_attend_code
+        description: Whether a police officer attended the scene.
+        data_tests:
+          - not_null
+
+  # ════════════════════════════════════════════════════════════════
+  # CASUALTIES
+  # ════════════════════════════════════════════════════════════════
+  - name: stg_casualties
+    description: >
+      Staged casualty records, 2015-2018. Each row is one person
+      injured or killed in a road accident.
+    columns:
+      - name: casualty_id
+        description: Surrogate key (accident_index-vehicle_reference-casualty_reference).
+        data_tests:
+          - unique
+          - not_null
+
+      - name: accident_index
+        description: Foreign key to stg_accidents.
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_accidents')
+              field: accident_index
+
+      - name: vehicle_reference
+        description: Vehicle reference number within the accident.
+        data_tests:
+          - not_null
+
+      - name: casualty_reference
+        description: Casualty reference number within the accident.
+        data_tests:
+          - not_null
+
+      - name: source_year
+        description: Year the record originated from.
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [2015, 2016, 2017, 2018]
+
+      - name: casualty_class_code
+        description: "Role: 1=Driver/rider, 2=Passenger, 3=Pedestrian."
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3]
+
+      - name: sex_of_casualty_code
+        description: "Sex: 1=Male, 2=Female, -1=Unknown."
+        data_tests:
+          - not_null
+
+      - name: age_of_casualty
+        description: Age of casualty in years.
+        data_tests:
+          - not_null
+
+      - name: age_band_of_casualty_code
+        description: Age band code. References lookup_age_band.
+        data_tests:
+          - not_null
+
+      - name: casualty_severity_code
+        description: "Severity: 1=Fatal, 2=Serious, 3=Slight."
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3]
+
+      - name: pedestrian_location_code
+        description: Location of pedestrian at time of accident (0 if not a pedestrian).
+
+      - name: pedestrian_movement_code
+        description: Movement of pedestrian (0 if not a pedestrian).
+
+      - name: car_passenger_code
+        description: "Car passenger position: 0=Not car passenger, 1=Front, 2=Rear."
+
+      - name: bus_or_coach_passenger_code
+        description: Bus or coach passenger status code.
+
+      - name: ped_road_maintenance_worker_code
+        description: Whether pedestrian was a road maintenance worker.
+
+      - name: casualty_type_code
+        description: Type of casualty (maps to vehicle types). References lookup_casualty_type.
+        data_tests:
+          - not_null
+
+      - name: casualty_home_area_type_code
+        description: Home area type of casualty (NULL if missing).
+
+      - name: casualty_imd_decile
+        description: IMD decile (1=most deprived, 10=least deprived, NULL if missing).
+
+  # ════════════════════════════════════════════════════════════════
+  # VEHICLES
+  # ════════════════════════════════════════════════════════════════
+  - name: stg_vehicles
+    description: >
+      Staged vehicle records, 2015-2018. Each row is one vehicle
+      involved in a road accident.
+    columns:
+      - name: vehicle_id
+        description: Surrogate key (accident_index-vehicle_reference).
+        data_tests:
+          - unique
+          - not_null
+
+      - name: accident_index
+        description: Foreign key to stg_accidents.
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_accidents')
+              field: accident_index
+
+      - name: vehicle_reference
+        description: Vehicle reference number within the accident.
+        data_tests:
+          - not_null
+
+      - name: source_year
+        description: Year the record originated from.
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [2015, 2016, 2017, 2018]
+
+      - name: vehicle_type_code
+        description: Type of vehicle. References lookup_vehicle_type.
+        data_tests:
+          - not_null
+
+      - name: towing_and_articulation_code
+        description: Towing or articulation status.
+
+      - name: vehicle_manoeuvre_code
+        description: Manoeuvre at time of accident.
+        data_tests:
+          - not_null
+
+      - name: vehicle_location_code
+        description: Vehicle location (restricted lane context).
+
+      - name: junction_location_code
+        description: Location relative to junction.
+
+      - name: skidding_and_overturning_code
+        description: Whether vehicle skidded or overturned.
+
+      - name: hit_object_in_carriageway_code
+        description: Object hit in carriageway (0=None).
+
+      - name: vehicle_leaving_carriageway_code
+        description: How vehicle left carriageway (0=Did not leave).
+
+      - name: hit_object_off_carriageway_code
+        description: Object hit off carriageway (0=None).
+
+      - name: first_point_of_impact_code
+        description: First point of impact on vehicle.
+
+      - name: was_left_hand_drive_code
+        description: "1=No, 2=Yes."
+
+      - name: journey_purpose_code
+        description: Journey purpose of driver.
+        data_tests:
+          - not_null
+
+      - name: sex_of_driver_code
+        description: "Sex of driver: 1=Male, 2=Female, 3=Not known."
+        data_tests:
+          - not_null
+
+      - name: age_of_driver
+        description: Age of driver in years (NULL if missing).
+
+      - name: age_band_of_driver_code
+        description: Age band code for driver (NULL if missing).
+
+      - name: engine_capacity_cc
+        description: Engine capacity in cubic centimetres (NULL if missing).
+
+      - name: propulsion_code
+        description: >
+          Propulsion type code (VARCHAR because code 'M' exists for undefined).
+          References lookup_propulsion_code.
+
+      - name: age_of_vehicle
+        description: Age of vehicle in years (NULL if missing).
+
+      - name: driver_imd_decile
+        description: IMD decile for driver (NULL if missing).
+
+      - name: driver_home_area_type_code
+        description: Home area type of driver (NULL if missing).
+
+      - name: vehicle_imd_decile
+        description: IMD decile for vehicle registration area (NULL if missing).
+
+  # ════════════════════════════════════════════════════════════════
+  # LOOKUP TABLES
+  # ════════════════════════════════════════════════════════════════
+  - name: stg_lookup_accident_severity
+    description: "Accident severity: 1=Fatal, 2=Serious, 3=Slight."
+    columns: &lookup_columns
+      - name: code
+        data_tests: [unique, not_null]
+      - name: label
+        data_tests: [not_null]
+
+  - name: stg_lookup_age_band
+    description: Age band groupings (e.g. 0-5, 6-10, 11-15, ..., 75+).
+    columns: *lookup_columns
+
+  - name: stg_lookup_bus_passenger
+    description: Bus or coach passenger position codes.
+    columns: *lookup_columns
+
+  - name: stg_lookup_car_passenger
+    description: Car passenger position codes.
+    columns: *lookup_columns
+
+  - name: stg_lookup_carriageway_hazards
+    description: Carriageway hazard codes.
+    columns: *lookup_columns
+
+  - name: stg_lookup_casualty_class
+    description: "Casualty class: 1=Driver/Rider, 2=Passenger, 3=Pedestrian."
+    columns: *lookup_columns
+
+  - name: stg_lookup_casualty_severity
+    description: "Casualty severity: 1=Fatal, 2=Serious, 3=Slight."
+    columns: *lookup_columns
+
+  - name: stg_lookup_casualty_type
+    description: Casualty type codes (maps to vehicle types).
+    columns: *lookup_columns
+
+  - name: stg_lookup_day_of_week
+    description: "Day of week: 1=Sunday through 7=Saturday."
+    columns: *lookup_columns
+
+  - name: stg_lookup_first_point_of_impact
+    description: First point of impact on vehicle.
+    columns: *lookup_columns
+
+  - name: stg_lookup_hit_object_carriageway
+    description: Objects hit in the carriageway.
+    columns: *lookup_columns
+
+  - name: stg_lookup_hit_object_off_carriageway
+    description: Objects hit off the carriageway.
+    columns: *lookup_columns
+
+  - name: stg_lookup_home_area_type
+    description: Home area type classification.
+    columns: *lookup_columns
+
+  - name: stg_lookup_imd_decile
+    description: Index of Multiple Deprivation decile (1=most deprived, 10=least).
+    columns: *lookup_columns
+
+  - name: stg_lookup_journey_purpose
+    description: Journey purpose of driver.
+    columns: *lookup_columns
+
+  - name: stg_lookup_junction_control
+    description: Junction control types.
+    columns: *lookup_columns
+
+  - name: stg_lookup_junction_detail
+    description: Junction detail types.
+    columns: *lookup_columns
+
+  - name: stg_lookup_junction_location
+    description: Vehicle location relative to junction.
+    columns: *lookup_columns
+
+  - name: stg_lookup_left_hand_drive
+    description: Whether vehicle was left-hand drive.
+    columns: *lookup_columns
+
+  - name: stg_lookup_light_conditions
+    description: Light conditions at time of accident.
+    columns: *lookup_columns
+
+  - name: stg_lookup_local_authority_district
+    description: Local authority district codes and names.
+    columns: *lookup_columns
+
+  - name: stg_lookup_ped_crossing_human
+    description: Human control at pedestrian crossing.
+    columns: *lookup_columns
+
+  - name: stg_lookup_ped_crossing_physical
+    description: Physical facilities at pedestrian crossing.
+    columns: *lookup_columns
+
+  - name: stg_lookup_ped_location
+    description: Pedestrian location at time of accident.
+    columns: *lookup_columns
+
+  - name: stg_lookup_ped_movement
+    description: Pedestrian movement at time of accident.
+    columns: *lookup_columns
+
+  - name: stg_lookup_ped_road_maintenance
+    description: Whether pedestrian was a road maintenance worker.
+    columns: *lookup_columns
+
+  - name: stg_lookup_police_force
+    description: Police force codes and names.
+    columns: *lookup_columns
+
+  - name: stg_lookup_police_officer_attend
+    description: Whether police officer attended scene.
+    columns: *lookup_columns
+
+  - name: stg_lookup_propulsion_code
+    description: Vehicle propulsion type codes (includes code M for undefined).
+    columns: *lookup_columns
+
+  - name: stg_lookup_road_class
+    description: "Road class: 1=Motorway, 2=A(M), 3=A, 4=B, 5=C, 6=Unclassified."
+    columns: *lookup_columns
+
+  - name: stg_lookup_road_surface
+    description: Road surface condition codes.
+    columns: *lookup_columns
+
+  - name: stg_lookup_road_type
+    description: Road type codes.
+    columns: *lookup_columns
+
+  - name: stg_lookup_second_road_class
+    description: Second road class at junction.
+    columns: *lookup_columns
+
+  - name: stg_lookup_sex_of_casualty
+    description: Sex of casualty codes.
+    columns: *lookup_columns
+
+  - name: stg_lookup_sex_of_driver
+    description: Sex of driver codes.
+    columns: *lookup_columns
+
+  - name: stg_lookup_skidding_overturning
+    description: Skidding and overturning codes.
+    columns: *lookup_columns
+
+  - name: stg_lookup_special_conditions
+    description: Special conditions at accident site.
+    columns: *lookup_columns
+
+  - name: stg_lookup_speed_limit
+    description: Speed limit values.
+    columns: *lookup_columns
+
+  - name: stg_lookup_towing_articulation
+    description: Towing and articulation status codes.
+    columns: *lookup_columns
+
+  - name: stg_lookup_urban_rural
+    description: "Urban/rural classification: 1=Urban, 2=Rural, 3=Unallocated."
+    columns: *lookup_columns
+
+  - name: stg_lookup_vehicle_leaving_carriageway
+    description: How vehicle left the carriageway.
+    columns: *lookup_columns
+
+  - name: stg_lookup_vehicle_location
+    description: Vehicle location (restricted lane) codes.
+    columns: *lookup_columns
+
+  - name: stg_lookup_vehicle_manoeuvre
+    description: Vehicle manoeuvre at time of accident.
+    columns: *lookup_columns
+
+  - name: stg_lookup_vehicle_type
+    description: Vehicle type codes (pedal cycle, motorcycle, car, bus, etc.).
+    columns: *lookup_columns
+
+  - name: stg_lookup_weather_conditions
+    description: Weather condition codes.
+    columns: *lookup_columns

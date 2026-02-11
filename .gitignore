@@ -1,0 +1,30 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Raw data (too large for git, reproducible via extract_data.py)
+data/
+
+# Snowflake database files
+*.duckdb
+
+# dbt
+uk_road_safety_dbt/target/
+uk_road_safety_dbt/dbt_packages/
+uk_road_safety_dbt/logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Claude Code settings
+.claude/
+
+# Misc
+logs/
+nul

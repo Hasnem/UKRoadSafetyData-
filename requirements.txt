@@ -1,0 +1,13 @@
+# Data extraction & processing
+pandas
+xlrd
+openpyxl
+
+# dbt with Snowflake adapter (includes dbt-core)
+dbt-snowflake
+
+# Snowflake connector
+snowflake-connector-python
+
+# DuckDB (local development / staging)
+duckdb

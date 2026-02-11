@@ -1,0 +1,89 @@
+version: 2
+
+sources:
+  - name: uk_road_safety_raw
+    description: >
+      UK Department for Transport road safety data (2015-2018).
+      Police-reported personal injury accidents on public roads,
+      with associated casualty and vehicle records.
+      Loaded from CSV files into Snowflake RAW schema via INFER_SCHEMA.
+    database: UKROADSAFETYDATA
+    schema: RAW
+
+    tables:
+      # ── Accident fact tables ──
+      - name: ACCIDENTS_2015
+        description: Road accident records for 2015 (~140k rows).
+      - name: ACCIDENTS_2016
+        description: Road accident records for 2016 (~136k rows).
+      - name: ACCIDENTS_2017
+        description: Road accident records for 2017 (~130k rows).
+      - name: ACCIDENTS_2018
+        description: Road accident records for 2018 (~122k rows).
+
+      # ── Casualty fact tables ──
+      - name: CASUALTIES_2015
+        description: Casualty records for 2015 (~186k rows).
+      - name: CASUALTIES_2016
+        description: Casualty records for 2016 (~181k rows).
+      - name: CASUALTIES_2017
+        description: Casualty records for 2017 (~170k rows).
+      - name: CASUALTIES_2018
+        description: Casualty records for 2018 (~160k rows).
+
+      # ── Vehicle fact tables ──
+      - name: VEHICLES_2015
+        description: Vehicle records for 2015 (~257k rows).
+      - name: VEHICLES_2016
+        description: Vehicle records for 2016 (~252k rows).
+      - name: VEHICLES_2017
+        description: Vehicle records for 2017 (~238k rows).
+      - name: VEHICLES_2018
+        description: Vehicle records for 2018 (~226k rows).
+
+      # ── Lookup / reference tables ──
+      - name: LOOKUP_ACCIDENT_SEVERITY
+      - name: LOOKUP_AGE_BAND
+      - name: LOOKUP_BUS_PASSENGER
+      - name: LOOKUP_CAR_PASSENGER
+      - name: LOOKUP_CARRIAGEWAY_HAZARDS
+      - name: LOOKUP_CASUALTY_CLASS
+      - name: LOOKUP_CASUALTY_SEVERITY
+      - name: LOOKUP_CASUALTY_TYPE
+      - name: LOOKUP_DAY_OF_WEEK
+      - name: LOOKUP_FIRST_POINT_OF_IMPACT
+      - name: LOOKUP_HIT_OBJECT_CARRIAGEWAY
+      - name: LOOKUP_HIT_OBJECT_OFF_CARRIAGEWAY
+      - name: LOOKUP_HOME_AREA_TYPE
+      - name: LOOKUP_IMD_DECILE
+      - name: LOOKUP_JOURNEY_PURPOSE
+      - name: LOOKUP_JUNCTION_CONTROL
+      - name: LOOKUP_JUNCTION_DETAIL
+      - name: LOOKUP_JUNCTION_LOCATION
+      - name: LOOKUP_LEFT_HAND_DRIVE
+      - name: LOOKUP_LIGHT_CONDITIONS
+      - name: LOOKUP_LOCAL_AUTHORITY_DISTRICT
+      - name: LOOKUP_PED_CROSSING_HUMAN
+      - name: LOOKUP_PED_CROSSING_PHYSICAL
+      - name: LOOKUP_PED_LOCATION
+      - name: LOOKUP_PED_MOVEMENT
+      - name: LOOKUP_PED_ROAD_MAINTENANCE
+      - name: LOOKUP_POLICE_FORCE
+      - name: LOOKUP_POLICE_OFFICER_ATTEND
+      - name: LOOKUP_PROPULSION_CODE
+      - name: LOOKUP_ROAD_CLASS
+      - name: LOOKUP_ROAD_SURFACE
+      - name: LOOKUP_ROAD_TYPE
+      - name: LOOKUP_SECOND_ROAD_CLASS
+      - name: LOOKUP_SEX_OF_CASUALTY
+      - name: LOOKUP_SEX_OF_DRIVER
+      - name: LOOKUP_SKIDDING_OVERTURNING
+      - name: LOOKUP_SPECIAL_CONDITIONS
+      - name: LOOKUP_SPEED_LIMIT
+      - name: LOOKUP_TOWING_ARTICULATION
+      - name: LOOKUP_URBAN_RURAL
+      - name: LOOKUP_VEHICLE_LEAVING_CARRIAGEWAY
+      - name: LOOKUP_VEHICLE_LOCATION
+      - name: LOOKUP_VEHICLE_MANOEUVRE
+      - name: LOOKUP_VEHICLE_TYPE
+      - name: LOOKUP_WEATHER_CONDITIONS
