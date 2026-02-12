@@ -5,6 +5,7 @@ __pycache__/
 
 # Raw data (too large for git, reproducible via extract_data.py)
 data/
+analysis_csvs/
 
 # Snowflake database files
 *.duckdb
@@ -24,6 +25,10 @@ Thumbs.db
 
 # Claude Code settings
 .claude/
+
+# Markdown files (except README)
+*.md
+!README.md
 
 # Misc
 logs/
