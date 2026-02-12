@@ -143,11 +143,6 @@ Connected Snowflake to Tableau Desktop and published to [Tableau Public](https:/
 ```bash
 pip install -r requirements.txt
 ```
-
-### Configure
-
-Create `~/.dbt/profiles.yml` with a `BTC` profile pointing to your Snowflake account and `UKROADSAFETYDATA` database.
-
 ### Run
 
 ```bash
