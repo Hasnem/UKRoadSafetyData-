@@ -29,6 +29,7 @@ Thumbs.db
 # Markdown files (except README)
 *.md
 !README.md
+!Dashboard_Metrics.md
 
 # Misc
 logs/
