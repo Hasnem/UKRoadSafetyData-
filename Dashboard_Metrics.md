@@ -1,94 +1,136 @@
-# Dashboard Metrics
+# Dashboard Metrics Reference
 
 **Fewer Crashes, Deadlier Outcomes**
 
-Definitions, formulas, and grouping logic for every metric and classification in the dashboard.
+UK Road Safety 2015–2018 | STATS19 | dbt → Snowflake → Tableau
+
+Definitions, formulas, and key insight for every dashboard component in visual order.
 
 ---
 
-## Core Metrics
+## 1. KPI Scorecards
 
-Base counts shown in the KPI scorecards that feed into all calculated rates.
-
-| Metric | Definition |
-|--------|------------|
-| Total Accidents | Count of unique police-recorded road traffic accidents. |
-| Total Casualties | Count of all people injured or killed across all accidents. One accident can produce multiple casualties. |
-| Total Fatalities | Count of casualties who died within 30 days of the accident (UK 30-day rule). |
-| Total Serious Injuries | Count of casualties hospitalised with fractures, internal injuries, severe burns, crushing, concussion, or loss of limb. |
-
-## Rates
-
-The dashboard uses two denominator levels depending on the question being asked.
-
-| Rate | Formula & Usage |
-|------|-----------------|
-| Fatality Rate (accident-level) | Fatal Accidents / Total Accidents x 100. Asks: given a crash happened, was it fatal? Used in Heatmap and Conditions charts. |
-| Fatality Rate (casualty-level) | Fatal Casualties / Total Casualties x 100. Asks: given a person was hurt, did they die? Used in KPIs, Vulnerability, and Deprivation charts. |
-| KSI Rate | (Fatalities + Serious Injuries) / Total Casualties x 100. KSI = Killed or Seriously Injured. The UK government's primary road safety target metric. Used in KPIs, Trend, and Police Map. |
-
-## Change Metrics
-
-Shown in the KPI scorecards to indicate year-over-year direction.
+**Source:** summary_yearly_kpis ← mart_accidents + mart_casualties
 
 | Metric | Formula |
-|--------|---------|
-| % Change (counts) | (Current Year - Previous Year) / Previous Year x 100. Applied to accident, casualty, and fatality counts. Negative = improving. |
-| pp Change (rates) | Current Year Rate - Previous Year Rate. Expressed in percentage points (pp). Applied to KSI Rate and Fatality Rate. Positive = worsening. |
+|---|---|
+| **Total Accidents** | Count of unique police-recorded accidents. |
+| **Total Casualties** | Count of all people injured or killed across all accidents. |
+| **Total Fatalities** | Casualties who died within 30 days of the accident. |
+| **KSI Rate** | (Fatalities + Serious Injuries) ÷ Total Casualties × 100. |
+| **% Change (counts)** | (Current Year − Previous Year) ÷ Previous Year × 100. |
+| **pp Change (rates)** | Current Year Rate − Previous Year Rate. |
 
-## Index (Trend Chart)
+> **Insight:** All volume metrics are falling, but the KSI rate keeps rising. Fewer people crash, yet those who do face worse outcomes.
 
-Rebases multiple metrics to a common starting point so they can be compared on one chart despite different scales.
+---
 
-| Concept | How It Works |
-|---------|--------------|
-| Index Formula | (Value in Current Year / Value in Base Year) x 100. Every metric starts at exactly 100 in the base year. |
-| Above 100 | The metric has worsened compared to the base year. |
-| Below 100 | The metric has improved compared to the base year. |
+## 2. The KSI Paradox (Indexed Trend Chart)
 
-## Multipliers
+**Source:** dashboard_trend_ksi_paradox ← summary_yearly_kpis
 
-Express how much deadlier one group or condition is relative to a reference point.
+| Concept | Definition |
+|---|---|
+| **Index Formula** | (Value in Current Year ÷ Value in Base Year) × 100. Every metric starts at exactly 100 in the base year (2015). |
+| **Above 100** | The metric has worsened compared to the base year. |
+| **Below 100** | The metric has improved compared to the base year. |
+| **Metrics Indexed** | Total Accidents, Total Casualties, Total Fatalities, and KSI Rate — all on one axis despite different scales. |
 
-| Chart | How the Multiplier Is Calculated |
-|-------|----------------------------------|
-| Conditions That Kill | Condition Fatality Rate / Baseline Fatality Rate. Baseline = Urban, Daylight, 30 mph, the safest common driving scenario. |
-| Who Is Most Vulnerable? | Profile Fatality Rate / Overall Average Fatality Rate. Average = fatality rate across all casualties regardless of type or age. |
+> **Insight:** Volume metrics trend below 100 while KSI Rate climbs well above it, making the paradox visually unmistakable on a single chart.
 
-## Groups & Classifications
+---
 
-How categories and colour-coded groups are constructed.
+## 3. When Are Roads Deadliest? (Fatality Heatmap)
 
-| Group | How It Is Defined |
-|-------|-------------------|
-| Condition Labels | Each condition combines three filters on accident data: Urban vs Rural area, Lighting (Daylight, Dark-lit, Dark-unlit), and Speed limit. Fog is filtered by weather field regardless of other conditions. |
-| Risk Category | Assigned by fatality rate thresholds: Extreme, High, Elevated, and Baseline. Used for bar colour in the Conditions chart. |
-| Vulnerability Profiles | Each profile filters casualties by type (Pedestrian, Cyclist, Car Occupant) and optionally by age band (Over 75, 66-75, Child). All ages combined where not specified. |
-| IMD Decile | Index of Multiple Deprivation. England's official area-level deprivation score combining income, employment, health, education, crime, housing, and living environment. Areas ranked into ten equal groups. Lowest decile = most deprived. |
-| Deprivation Group | Three-tier grouping of IMD deciles for colour coding: Most Deprived (lowest deciles, red), Middle (amber), Least Deprived (highest deciles, green). |
-| Heatmap Cells | Each cell is one hour-of-day x day-of-week combination. Colour intensity represents the fatality rate for that time slot, darker = deadlier. |
-| Vs National Avg (Map) | Each police force's KSI rate compared to the national average. Above average = darker red. Below average = lighter. |
-| Trend Category (Map) | Classifies each police force by how much its KSI rate changed since the base year: Decrease, Slight Increase, Moderate Increase, Large Increase. |
+**Source:** dashboard_heatmap_hour_day ← summary_temporal ← mart_accidents
 
-## Visual Scaling
+| Element | Definition |
+|---|---|
+| **Cell** | One hour-of-day (0–23) × day-of-week combination, aggregated across all four years. |
+| **Fatality Rate** | Fatal Accidents ÷ Total Accidents × 100. This is an accident-level rate (was the crash fatal?). |
+| **Colour Intensity** | Min–max normalisation: (Cell Rate − Min Rate) ÷ (Max Rate − Min Rate). Produces a 0–1 scale. Darker = deadlier. |
 
-Techniques applied to make visualisations readable.
+> **Insight:** Late-night and early-morning hours, especially on weekends, have the highest fatality rates. Rush hours are the opposite: frequent crashes but rarely fatal.
 
-| Technique | How & Why |
-|-----------|-----------|
-| Bubble Size (Map) | Square-root of total accidents. Without scaling, the largest force would visually overwhelm all others. Square-root ensures bubble area is proportional to data volume. |
-| Colour Intensity (Heatmap) | Min-max normalisation: (cell rate - minimum) / (maximum - minimum). Produces a zero-to-one scale mapped to the colour gradient. Lightest = safest, darkest = deadliest. |
+---
+
+## 4. Conditions That Kill (Risk Ladder)
+
+**Source:** dashboard_conditions_multiplier ← mart_accidents
+
+| Element | Definition |
+|---|---|
+| **Condition Labels** | Each label combines filters on urban/rural area, lighting (Daylight, Dark-lit, Dark-unlit), and speed limit. Fog is filtered by weather regardless of other conditions. |
+| **Fatality Rate** | Fatal Accidents ÷ Total Accidents × 100. Accident-level rate: given a crash happened under these conditions, was it fatal? |
+| **Baseline** | Urban · Daylight · 30mph — the safest common driving scenario. |
+| **Multiplier** | Condition Fatality Rate ÷ Baseline Fatality Rate. Shows how many times deadlier a condition is. |
+| **Risk Category** | Extreme (≥4.0%), High (≥2.5%), Elevated (≥1.0%), Baseline (<1.0%). Drives bar colour on a traffic-light scale. |
+
+> **Insight:** Rural, unlit, high-speed roads are the deadliest corridors. Conditions compound: each added risk factor (darkness, higher speed, no lighting) multiplies the fatality rate.
+
+---
+
+## 5. Who Is Most Vulnerable? (Vulnerability Profile)
+
+**Source:** dashboard_vulnerability_profile ← mart_casualties
+
+| Element | Definition |
+|---|---|
+| **Profiles** | Each profile filters casualties by road-user type (Pedestrian, Cyclist, Car Occupant) and optionally by age band (Over 75, 66–75, Child 0–15). |
+| **Fatality Rate** | Fatal Casualties ÷ Total Casualties × 100. Casualty-level rate: given a person was hurt, did they die? |
+| **Reference Line** | All Casualties (Average) — the overall fatality rate across every casualty regardless of type or age. |
+| **Multiplier** | Profile Fatality Rate ÷ Overall Average Fatality Rate. Shows how many times more (or less) lethal the profile is vs the norm. |
+
+> **Insight:** Elderly pedestrians are by far the most vulnerable group. Age-related frailty makes even low-speed collisions lethal, while vehicle safety systems protect car occupants below average.
+
+---
+
+## 6. Deprivation & Child Pedestrians (Double Bind)
+
+**Source:** dashboard_deprivation_child ← mart_casualties
+
+| Element | Definition |
+|---|---|
+| **IMD Decile** | Index of Multiple Deprivation. England's area-level deprivation score (income, employment, health, education, crime, housing). Decile 1 = most deprived 10%. |
+| **Child Ped. Casualties (bars)** | Count of pedestrian casualties aged 0–15, grouped by the casualty's IMD decile. |
+| **All Ped. Fatality Rate (line)** | Pedestrian Fatalities ÷ Total Pedestrian Casualties × 100, by IMD decile. Casualty-level rate across all ages. |
+| **Deprivation Groups** | Most Deprived (Deciles 1–3), Middle (4–7), Least Deprived (8–10). Used for bar colour grouping. |
+
+> **Insight:** Deprived areas have far more child pedestrian casualties (a volume problem from greater exposure), while affluent areas have higher fatality rates (a severity problem from higher speeds). Two different problems requiring two different interventions.
+
+---
+
+## 7. Police Force KSI Rates (Bubble Map)
+
+**Source:** dashboard_police_force_map ← summary_geographic ← mart_accidents
+
+| Element | Definition |
+|---|---|
+| **KSI Rate** | (Fatal + Serious Accidents) ÷ Total Accidents × 100, per police force for the latest year. |
+| **KSI Change (pp)** | Latest Year KSI Rate − Baseline Year KSI Rate. Expressed in percentage points. |
+| **Bubble Size** | Square root of total accidents. Ensures bubble area is proportional to volume without large forces overwhelming the map. |
+| **Bubble Colour** | KSI rate thresholds: ≥30% red, ≥20% orange, ≥15% amber, <15% green. |
+| **Vs National Average** | Each force's KSI rate compared to the mean across all forces. Above or below. |
+| **Trend Category** | Classifies each force by KSI change since baseline: Large Increase (>10pp), Moderate (5–10pp), Slight (0–5pp), or Decrease. |
+| **Map Coordinates** | Average latitude and longitude of all accidents in each force area. |
+
+> **Insight:** Nearly every force saw KSI rates rise since 2015, with only a handful showing any decrease. The paradox plays out geographically: forces with fewer accidents still see worsening severity.
+
+---
 
 ## Glossary
 
 | Term | Definition |
-|------|------------|
-| KSI | Killed or Seriously Injured. The UK government's primary road safety measure. |
-| Fatal (30-day rule) | A casualty who died within 30 days of the accident. UK and international standard. |
-| Serious Injury | Hospitalised with fractures, internal injuries, severe burns, crushing, concussion, or loss of limb/sight. |
-| Slight Injury | Any injury not Fatal or Serious — sprains, bruises, whiplash not requiring hospital stay. |
-| pp | Percentage points. The absolute difference between two percentages. |
-| IMD | Index of Multiple Deprivation. England's official neighbourhood deprivation measure. |
-| STATS19 | UK police-reported road accident dataset. The source for all data in this dashboard. |
-| Speed Limit | The posted speed limit on the road where the accident occurred, not the vehicle's speed of travel. |
-| Accident Severity | Determined by the worst casualty outcome in the accident: Fatal > Serious > Slight. |
+|---|---|
+| **KSI** | Killed or Seriously Injured. The UK government's primary road safety measure. |
+| **Fatal (30-day rule)** | A casualty who died within 30 days of the accident. |
+| **Serious Injury** | Hospitalised with fractures, internal injuries, severe burns, crushing, concussion, or loss of limb. |
+| **STATS19** | UK police-reported road accident dataset. The source for all data in this dashboard. |
+| **IMD** | Index of Multiple Deprivation. England's area-level deprivation measure. |
+| **pp** | Percentage points. The absolute difference between two percentages. |
+| **Speed Limit** | The posted limit on the road, not the vehicle's actual speed. |
+| **Accident Severity** | Determined by the worst casualty outcome: Fatal > Serious > Slight. |
+
+---
+
+*Built by Hassan Nammari | dbt → Snowflake → Tableau*
