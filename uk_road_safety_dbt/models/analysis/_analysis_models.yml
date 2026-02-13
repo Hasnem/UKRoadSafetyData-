@@ -1,0 +1,529 @@
+version: 2
+
+models:
+
+  # ════════════════════════════════════════════════════════════════
+  # SECTION 1: EXECUTIVE OVERVIEW
+  # ════════════════════════════════════════════════════════════════
+  - name: summary_yearly_kpis
+    description: >
+      Yearly KPIs for scorecards and trend sparklines.
+      One row per year (2015-2018) with accident counts, casualty counts,
+      fatality breakdowns, KSI metrics, averages, and year-over-year percentage changes.
+    columns:
+      - name: accident_year
+        description: Year (2015-2018).
+        data_tests:
+          - unique
+          - not_null
+
+      - name: total_accidents
+        description: Total police-reported accidents in the year.
+        data_tests:
+          - not_null
+
+      - name: total_casualties
+        description: Total casualties (all severities) in the year.
+        data_tests:
+          - not_null
+
+      - name: total_vehicles
+        description: Total vehicles involved in accidents in the year.
+        data_tests:
+          - not_null
+
+      - name: total_fatalities
+        description: Casualties killed (casualty_severity = Fatal).
+        data_tests:
+          - not_null
+
+      - name: total_serious_injuries
+        description: Casualties seriously injured (casualty_severity = Serious).
+        data_tests:
+          - not_null
+
+      - name: fatal_accidents
+        description: Accidents where at least one person was killed.
+
+      - name: serious_accidents
+        description: Accidents classified as serious (accident_severity = Serious).
+
+      - name: ksi_count
+        description: Killed or Seriously Injured count (total_fatalities + total_serious_injuries).
+
+      - name: avg_casualties_per_accident
+        description: Average number of casualties per accident.
+
+      - name: fatality_rate_pct
+        description: Fatalities as a percentage of all casualties.
+
+      - name: ksi_rate_pct
+        description: KSI (Killed or Seriously Injured) as a percentage of all casualties.
+
+      - name: pct_change_accidents
+        description: Year-over-year percentage change in total accidents (NULL for first year).
+
+      - name: pct_change_casualties
+        description: Year-over-year percentage change in total casualties (NULL for first year).
+
+      - name: pct_change_fatalities
+        description: Year-over-year percentage change in fatalities (NULL for first year).
+
+      - name: ksi_rate_change_pp
+        description: Year-over-year change in KSI rate in percentage points (NULL for first year).
+
+      - name: accidents_arrow
+        description: Direction arrow for accidents YoY change (▼ or ▲).
+
+      - name: casualties_arrow
+        description: Direction arrow for casualties YoY change (▼ or ▲).
+
+      - name: fatalities_arrow
+        description: Direction arrow for fatalities YoY change (▼ or ▲).
+
+      - name: ksi_rate_arrow
+        description: Direction arrow for KSI rate change (▼ or ▲).
+
+      - name: accidents_sentiment
+        description: Trend color for accidents (green = decrease, red = increase).
+
+      - name: casualties_sentiment
+        description: Trend color for casualties (green = decrease, red = increase).
+
+      - name: fatalities_sentiment
+        description: Trend color for fatalities (green = decrease, red = increase).
+
+      - name: ksi_rate_sentiment
+        description: Trend color for KSI rate (green = decrease, red = increase).
+
+      - name: accidents_change_label
+        description: Pre-formatted label with arrow and percentage (e.g. "▼ 2.45%").
+
+      - name: casualties_change_label
+        description: Pre-formatted label with arrow and percentage.
+
+      - name: fatalities_change_label
+        description: Pre-formatted label with arrow and percentage.
+
+      - name: ksi_rate_change_label
+        description: Pre-formatted label with arrow and pp change (e.g. "▲ +1.39pp").
+
+  # ════════════════════════════════════════════════════════════════
+  # SECTION 2: TEMPORAL PATTERNS
+  # ════════════════════════════════════════════════════════════════
+  - name: summary_temporal
+    description: >
+      Temporal accident patterns by year, month, day of week, hour, and severity.
+      Powers heatmaps (day x hour), monthly trend lines, day-of-week charts,
+      and weekend vs weekday comparisons.
+    columns:
+      - name: accident_year
+        description: Year (2015-2018).
+        data_tests:
+          - not_null
+
+      - name: accident_month
+        description: Month number (1-12).
+        data_tests:
+          - not_null
+
+      - name: day_of_week
+        description: Day of week name (e.g. Monday, Tuesday).
+        data_tests:
+          - not_null
+
+      - name: day_of_week_order
+        description: Sort order for day of week (1=Monday through 7=Sunday, UK convention).
+        data_tests:
+          - not_null
+
+      - name: accident_hour
+        description: Hour of day (0-23).
+        data_tests:
+          - not_null
+
+      - name: is_weekend
+        description: Whether the day is a weekend (Saturday or Sunday).
+        data_tests:
+          - not_null
+
+      - name: severity
+        description: Accident severity (Fatal, Serious, Slight).
+        data_tests:
+          - not_null
+
+      - name: total_accidents
+        description: Number of accidents.
+        data_tests:
+          - not_null
+
+      - name: total_casualties
+        description: Sum of casualties from these accidents.
+
+      - name: casualties_in_fatal_accidents
+        description: Casualties in accidents classified as fatal.
+
+      - name: fatal_accidents
+        description: Number of fatal accidents.
+
+  # ════════════════════════════════════════════════════════════════
+  # SECTION 3: GEOGRAPHIC (supporting table for dashboard map)
+  # ════════════════════════════════════════════════════════════════
+  - name: summary_geographic
+    description: >
+      Police force area analysis with accident counts, severity rates,
+      and average coordinates. Powers geographic heatmaps, police force
+      rankings, and regional comparison charts.
+    columns:
+      - name: accident_year
+        description: Year (2015-2018).
+        data_tests:
+          - not_null
+
+      - name: police_force
+        description: Police force area name.
+        data_tests:
+          - not_null
+
+      - name: total_accidents
+        description: Number of accidents in this police force area.
+        data_tests:
+          - not_null
+
+      - name: total_casualties
+        description: Total casualties in this area.
+
+      - name: fatal_accidents
+        description: Number of fatal accidents.
+
+      - name: serious_accidents
+        description: Number of serious accidents.
+
+      - name: fatality_rate_pct
+        description: Fatal accidents as a percentage of total accidents.
+
+      - name: ksi_rate_pct
+        description: KSI accidents as a percentage of total accidents.
+
+      - name: avg_casualties_per_accident
+        description: Average casualties per accident in this area.
+
+      - name: avg_latitude
+        description: Average latitude of accidents (for map centroid).
+
+      - name: avg_longitude
+        description: Average longitude of accidents (for map centroid).
+
+  # ════════════════════════════════════════════════════════════════
+  # DASHBOARD-READY TABLES (pre-computed for Tableau)
+  # ════════════════════════════════════════════════════════════════
+
+  # ── Visual 2: KSI Paradox Trend Chart ────────────────────────
+  - name: dashboard_trend_ksi_paradox
+    description: >
+      Indexed trend data (2015=100) for the KSI Paradox chart.
+      Long format: one row per year × metric. Shows accidents/casualties
+      declining while KSI rate rises. Includes color hex and baseline flags.
+    columns:
+      - name: accident_year
+        description: Year (2015-2018).
+        data_tests:
+          - not_null
+
+      - name: metric_name
+        description: Metric name (Total Accidents, Total Casualties, Total Fatalities, KSI Rate).
+        data_tests:
+          - not_null
+
+      - name: metric_sort
+        description: Sort order for metrics (1-4).
+        data_tests:
+          - not_null
+
+      - name: raw_value
+        description: The original unindexed metric value.
+
+      - name: index_2015
+        description: Indexed value where 2015 = 100.
+        data_tests:
+          - not_null
+
+      - name: color_hex
+        description: Hex color code for the metric line.
+
+      - name: vs_baseline
+        description: Whether metric is above, below, or at 2015 baseline.
+
+      - name: reference_line_value
+        description: Constant 100 for the 2015 baseline reference line.
+
+  # ── Visual 3: Hour × Day Fatality Heatmap ────────────────────
+  - name: dashboard_heatmap_hour_day
+    description: >
+      Aggregated fatality rates by hour of day × day of week (all years combined).
+      168 rows (24 hours × 7 days). Includes color intensity (0-1),
+      risk levels, and pre-formatted tooltip text.
+    columns:
+      - name: day_of_week
+        description: Day of week name.
+        data_tests:
+          - not_null
+
+      - name: day_of_week_order
+        description: Sort order (1=Monday through 7=Sunday).
+        data_tests:
+          - not_null
+
+      - name: accident_hour
+        description: Hour of day (0-23).
+        data_tests:
+          - not_null
+
+      - name: hour_label
+        description: Formatted hour label (e.g. "03:00").
+
+      - name: total_accidents
+        description: Total accidents in this hour-day slot.
+        data_tests:
+          - not_null
+
+      - name: fatality_rate_pct
+        description: Fatality rate as percentage.
+
+      - name: color_intensity
+        description: Normalized 0-1 value for continuous color scale.
+
+      - name: risk_level
+        description: Categorical risk level (Low, Moderate, High, Extreme).
+
+      - name: risk_level_order
+        description: Sort order for risk level (1-4).
+
+      - name: is_weekend
+        description: Whether this is a weekend day.
+
+      - name: avg_fatality_rate_pct
+        description: Overall average fatality rate (for reference line).
+
+      - name: tooltip_text
+        description: Pre-formatted tooltip string.
+
+  # ── Visual 4: Conditions Risk Ladder ─────────────────────────
+  - name: dashboard_conditions_multiplier
+    description: >
+      Pre-labeled condition combinations showing how road/environment
+      conditions compound fatality risk. 7 rows from baseline (Urban/Daylight/30mph)
+      to deadliest corridor (Rural/Dark unlit/60mph). Includes multiplier vs baseline.
+    columns:
+      - name: condition_label
+        description: Human-readable condition combination label.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: sort_order
+        description: Display order (1=National Average through 7=deadliest).
+        data_tests:
+          - not_null
+
+      - name: total_accidents
+        description: Total accidents matching this condition.
+        data_tests:
+          - not_null
+
+      - name: fatal_accidents
+        description: Fatal accidents matching this condition.
+
+      - name: fatality_rate_pct
+        description: Fatality rate percentage.
+
+      - name: baseline_fatality_rate_pct
+        description: Baseline rate (Urban/Daylight/30mph) for reference.
+
+      - name: multiplier_vs_baseline
+        description: How many times deadlier than baseline (e.g. 8.6).
+
+      - name: rate_label
+        description: Pre-formatted rate label (e.g. "4.29%").
+
+      - name: multiplier_label
+        description: Pre-formatted multiplier label (e.g. "8.6x").
+
+      - name: bar_color_hex
+        description: Hex color for bar (traffic-light scale).
+
+      - name: risk_category
+        description: Risk category (Baseline, Elevated, High, Extreme).
+
+      - name: is_baseline
+        description: Whether this row is the baseline condition.
+
+      - name: is_national_avg
+        description: Whether this row is the national average.
+
+      - name: tooltip_text
+        description: Pre-formatted tooltip string.
+
+  # ── Visual 5: Vulnerability Profile ──────────────────────────
+  - name: dashboard_vulnerability_profile
+    description: >
+      Fatality rate by road user type and age group. 8 pre-selected profiles
+      from Pedestrian Over 75 (highest ~7%) to Pedestrian Child (lowest ~0.5%).
+      Includes multiplier vs average and color coding.
+    columns:
+      - name: profile_label
+        description: Road user profile label (e.g. "Pedestrian · Over 75").
+        data_tests:
+          - not_null
+          - unique
+
+      - name: sort_order
+        description: Display order (1=highest fatality rate).
+        data_tests:
+          - not_null
+
+      - name: total_casualties
+        description: Total casualties in this profile.
+        data_tests:
+          - not_null
+
+      - name: total_fatalities
+        description: Total fatalities in this profile.
+
+      - name: fatality_rate_pct
+        description: Fatality rate percentage.
+
+      - name: overall_avg_rate
+        description: Overall average fatality rate (for reference line).
+
+      - name: multiplier_vs_avg
+        description: How many times the average rate (e.g. 7.1).
+
+      - name: bar_color_hex
+        description: Hex color for bar (severity scale).
+
+      - name: vs_average
+        description: Whether above or below average.
+
+      - name: is_reference_line
+        description: Whether this row is the average reference line.
+
+      - name: rate_label
+        description: Pre-formatted rate label (e.g. "7.11%").
+
+      - name: multiplier_label
+        description: Pre-formatted multiplier label (e.g. "7.1x avg").
+
+      - name: tooltip_text
+        description: Pre-formatted tooltip string.
+
+  # ── Visual 6: Deprivation Double Bind ────────────────────────
+  - name: dashboard_deprivation_child
+    description: >
+      Child pedestrian casualties by IMD deprivation decile. Shows the
+      "double bind": deprived areas have more casualties, affluent areas
+      have higher fatality rates. 10 rows (one per decile).
+    columns:
+      - name: imd_decile
+        description: IMD decile (1=most deprived, 10=least deprived).
+        data_tests:
+          - not_null
+          - unique
+
+      - name: sort_order
+        description: Display order (1-10).
+
+      - name: decile_label
+        description: Formatted label (e.g. "Decile 1").
+
+      - name: deprivation_group
+        description: Grouped label (Most Deprived, Middle, Least Deprived).
+
+      - name: deprivation_group_order
+        description: Sort order for deprivation group (1-3).
+
+      - name: total_child_ped_casualties
+        description: Total child pedestrian casualties in this decile.
+        data_tests:
+          - not_null
+
+      - name: child_ped_fatalities
+        description: Child pedestrian fatalities in this decile.
+
+      - name: child_ped_fatality_rate_pct
+        description: Child pedestrian fatality rate percentage.
+
+      - name: total_ped_casualties
+        description: Total pedestrian casualties (all ages) in this decile.
+
+      - name: all_ped_fatality_rate_pct
+        description: All-age pedestrian fatality rate percentage.
+
+      - name: deprivation_color_intensity
+        description: Color intensity (0-1, higher = more deprived).
+
+      - name: bar_color_hex
+        description: Hex color for bars (red=deprived, green=affluent).
+
+      - name: tooltip_text
+        description: Pre-formatted tooltip string.
+
+  # ── Visual 7: Police Force Map ───────────────────────────────
+  - name: dashboard_police_force_map
+    description: >
+      Police force area data for geographic bubble map. Latest year only,
+      with baseline comparison (2015 vs 2018), national average reference,
+      trend categories, and pre-computed map coordinates.
+    columns:
+      - name: police_force
+        description: Police force area name.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: latest_year
+        description: The latest year of data.
+
+      - name: total_accidents
+        description: Total accidents in this force area (latest year).
+        data_tests:
+          - not_null
+
+      - name: latest_ksi_rate_pct
+        description: KSI rate in the latest year.
+
+      - name: baseline_ksi_rate_pct
+        description: KSI rate in baseline year (2015).
+
+      - name: ksi_rate_change_pp
+        description: Change in KSI rate in percentage points.
+
+      - name: national_avg_ksi_rate
+        description: National average KSI rate (for reference).
+
+      - name: vs_national_avg
+        description: Whether above or below national average.
+
+      - name: trend_category
+        description: Trend category (Decrease, Slight/Moderate/Large Increase).
+
+      - name: trend_category_order
+        description: Sort order for trend category (1-4).
+
+      - name: avg_latitude
+        description: Average latitude for map placement.
+
+      - name: avg_longitude
+        description: Average longitude for map placement.
+
+      - name: bubble_size
+        description: Pre-computed sqrt-scaled bubble size.
+
+      - name: marker_color_hex
+        description: Hex color for map marker.
+
+      - name: ksi_change_arrow
+        description: Direction arrow for KSI change (▲ or ▼).
+
+      - name: tooltip_text
+        description: Pre-formatted tooltip string.

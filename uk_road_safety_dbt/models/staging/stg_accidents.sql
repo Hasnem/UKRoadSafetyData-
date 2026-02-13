@@ -30,7 +30,7 @@ select
     -- Date & time
     try_to_date("Date"::varchar, 'DD/MM/YYYY')             as accident_date,
     try_cast("Day_of_Week"::varchar as integer)             as day_of_week_code,
-    try_to_time("Time"::varchar, 'HH24:MI')                as accident_time,
+    "Time"::time                                             as accident_time,
 
     -- Road characteristics
     try_cast("1st_Road_Class"::varchar as integer)          as first_road_class_code,

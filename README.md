@@ -27,7 +27,8 @@ Plus 45 lookup/reference tables extracted from `variable_lookup.xls`.
 
 **Excluded files:**
 - `RoadSafetyData_2015.zip` - duplicate of existing 2015 data
-- `BloodAlcoholContent-CoronersMatchedData2009.zip` - unrelated to 2015-2018 scope, missing key columns for categories and vehicles
+- `BloodAlcoholContent-CoronersMatchedData2009.zip`
+- `Midyear_Provisional_Road_Safety_Data_2019_DataGov.zip` - missing key columns, and we don't have casualties and vehicles data for 2019
 
 ## Pipeline Steps
 
@@ -41,15 +42,19 @@ Plus 45 lookup/reference tables extracted from `variable_lookup.xls`.
 ### 2. Snowflake Infrastructure
 
 - **Database:** `UKROADSAFETYDATA`
-- **Schema:** `UKROADSAFETY_SCHEMA`
-- **Stage:** `UKROADSAFETY_STAGE` (internal)
 - **Warehouse:** `LARGE_WH`
+- **Schemas:**
+  - `RAW` - Source tables + internal stage + file formats
+  - `DBT_HNEMRAWI_STAGING` - 48 staging views
+  - `DBT_HNEMRAWI_MARTS` - 3 denormalized tables
+  - `DBT_HNEMRAWI_ANALYSIS` - 9 pre-aggregated tables
 
 ### 3. Load to Snowflake
 
 **Script:** `load_to_snowflake.py`
 
-- Creates `RAW` schema with auto-typed tables via `INFER_SCHEMA`
+- Creates `RAW` schema, internal stage, and file formats
+- Auto-detects column types via `INFER_SCHEMA`
 - Uploads files with `PUT`, loads with `COPY INTO`
 - 57 tables loaded (12 fact + 45 lookup), 2,204,957 total rows
 
@@ -101,11 +106,11 @@ Uses Jinja-looped `UNION ALL` with `try_cast` and `nullif` for safe type handlin
 
 ### 7. Testing
 
-230 dbt tests across all layers:
+249 dbt tests across all layers:
 
 - **Staging (182):** unique, not_null, accepted_values, relationships
 - **Marts (27):** primary keys, foreign keys, severity label validation
-- **Analysis (21):** dimension uniqueness, not_null on key fields
+- **Analysis (40):** dimension uniqueness, not_null on key fields
 
 ### 8. Dashboard
 

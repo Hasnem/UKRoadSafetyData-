@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 PROFILES_PATH = Path.home() / ".dbt" / "profiles.yml"
 
-STAGE = "UKROADSAFETY_SCHEMA.UKROADSAFETY_STAGE"
+STAGE = "RAW.UKROADSAFETY_STAGE"
 RAW_SCHEMA = "RAW"
 
 # (subfolder, table_name_prefix)
@@ -64,6 +64,7 @@ def prepare_file(csv_path, temp_dir):
 def setup_raw_schema(cur):
     """Create RAW schema and file formats."""
     cur.execute(f"CREATE SCHEMA IF NOT EXISTS {RAW_SCHEMA}")
+    cur.execute(f"CREATE STAGE IF NOT EXISTS {STAGE}")
 
     # File format for INFER_SCHEMA (needs PARSE_HEADER)
     cur.execute(f"""
